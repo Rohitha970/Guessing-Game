@@ -1,0 +1,97 @@
+import java.util.InputMismatchException;
+import java.util.Random;
+import java.util.Scanner;
+
+public class InteractiveGuessingGame {
+
+    // ANSI color codes for terminal output (works in most terminals)
+    public static final String GREEN = "\u001B[32m";
+    public static final String RED = "\u001B[31m";
+    public static final String YELLOW = "\u001B[33m";
+    public static final String CYAN = "\u001B[36m";
+    public static final String RESET = "\u001B[0m";
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        boolean playAgain;
+
+        printWithStyle("🎮 Welcome to the Interactive Number Guessing Game!", CYAN);
+        pause(1000);
+        printWithStyle("🔢 Rules: Guess the number between 1 and 100. You have 5 chances!", YELLOW);
+
+        do {
+            playGame(scanner);
+            System.out.print("\n🔁 Do you want to play again? (yes/no): ");
+            String response = scanner.next().toLowerCase();
+            playAgain = response.equals("yes") || response.equals("y");
+        } while (playAgain);
+
+        printWithStyle("\n👋 Thanks for playing! See you next time!", GREEN);
+        scanner.close();
+    }
+
+    // Core game logic
+    public static void playGame(Scanner scanner) {
+        Random random = new Random();
+        int secretNumber = random.nextInt(100) + 1;
+        int maxAttempts = 5;
+        boolean hasWon = false;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            int guess = getValidGuess(scanner, attempt, maxAttempts);
+
+            if (guess == secretNumber) {
+                printWithStyle("🎉 You guessed it right! The number was: " + secretNumber, GREEN);
+                hasWon = true;
+                break;
+            } else if (guess < secretNumber) {
+                printWithStyle("📉 Too low! Try a higher number.", YELLOW);
+            } else {
+                printWithStyle("📈 Too high! Try a lower number.", YELLOW);
+            }
+        }
+
+        if (!hasWon) {
+            printWithStyle("❌ You've used all your attempts! The correct number was: " + secretNumber, RED);
+        }
+    }
+
+    // Method to get a valid integer guess from the user
+    public static int getValidGuess(Scanner scanner, int currentAttempt, int totalAttempts) {
+        int guess = -1;
+        boolean validInput = false;
+
+        while (!validInput) {
+            try {
+                System.out.print("\n➡️  Attempt " + currentAttempt + "/" + totalAttempts + " - Enter your guess: ");
+                guess = scanner.nextInt();
+
+                if (guess < 1 || guess > 100) {
+                    printWithStyle("⚠️  Please enter a number between 1 and 100.", RED);
+                } else {
+                    validInput = true;
+                }
+
+            } catch (InputMismatchException e) {
+                printWithStyle("❗ Invalid input. Please enter a valid integer!", RED);
+                scanner.next(); // Clear invalid input
+            }
+        }
+
+        return guess;
+    }
+
+    // Stylized print helper
+    public static void printWithStyle(String message, String color) {
+        System.out.println(color + message + RESET);
+    }
+
+    // Pause for better interactivity
+    public static void pause(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+}
